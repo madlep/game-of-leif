@@ -154,8 +154,9 @@ void LeifWorld::rule(int p1name, int p2name, float G, float radius) {
 void LeifWorld::_rule(std::vector<LeifParticle *> particles1, std::vector<LeifParticle *> particles2, float G, float radius, int p1_length, int p2_length) {
     if (std::abs(G) < 0.1 || std::abs(radius) < 1.0) { return; }
     const float g = G / -100;
+    const float radius_sq = radius * radius;
 
-    omp_set_num_threads(4);
+    omp_set_num_threads(8);
     #pragma omp parallel for
     for (int i = 0; i < p1_length; i++) {
         LeifParticle* p1 = particles1[i];
@@ -199,10 +200,12 @@ void LeifWorld::_rule(std::vector<LeifParticle *> particles1, std::vector<LeifPa
 
             const float dx = p1pos.x - virt_pos_x;
             const float dy = p1pos.y - virt_pos_y;
-            const float r = std::sqrt(dx * dx + dy * dy);
+            // const float r = std::sqrt(dx * dx + dy * dy);
+            const float r_sq = dx * dx + dy * dy;
 
 
-            if (r > 0 && r < radius) {
+            if (r_sq > 0 && r_sq < radius_sq) {
+                const float r = std::sqrt(r_sq);
                 fx += (dx / r);
                 fy += (dy / r);
             }
